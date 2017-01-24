@@ -13,6 +13,37 @@
 		}
 		header("Location: index.php"); 
 	}else if(!empty($_POST['action'])&&!strcasecmp($_POST['action'],'exportData')){
-		echo 'export data';
+		if (file_exists('data.txt')) {  
+			$file = fopen('data.txt', 'r');
+			$dom = new DOMDocument('1.0');
+			$community = $dom->appendChild($dom->createElement('community'));
+
+			while ($line = fgetcsv($file,0,'|')) {
+				$member = $dom->createElement('member');
+    			$community->appendChild($member);
+
+    			$name = $dom->createElement('name');
+    			$c_name = $dom->createTextNode($line[0]);
+    			$name->appendChild($c_name);
+    			$member->appendChild($name);
+
+    			$birthday = $dom->createElement('birthday');
+    			$c_birthday = $dom->createTextNode($line[1]);
+    			$birthday->appendChild($c_birthday);
+    			
+    			$member->appendChild($birthday);
+			}
+			$dom->formatOutput = TRUE;
+
+			$dom->save('data.xml');
+
+			$file_url = 'data.xml';
+			header('Content-Type: application/octet-stream');
+			header("Content-Transfer-Encoding: Binary"); 
+			header("Content-disposition: attachment; filename=\"" . basename($file_url) . "\""); 
+			readfile($file_url);
+		}else{
+			header("Location: index.php"); 
+		}
 	}
 	
